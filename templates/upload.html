@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block body %}
+<h1>Late tubes</h1>
+<h2>Results</h2>
+{% if late_journeys %}
+You have {{ late_journeys | length }} eligible for refund.
+It could be worth TODO pounds
+<table>
+    <tr>
+        <th>Departure</th>
+        <th>Destination</th>
+        <th>Departure time</th>
+        <th>Estimated delay</th>
+    </tr>
+    {% for a_journey in late_journeys %}
+        <tr>
+            <td>{{ a_journey.departure }}</td>
+            <td>{{ a_journey.destination }}</td>
+            <td>{{ a_journey.departure_date }} {{ a_journey.departure_time }}</td>
+            <td>{{ a_journey.estimated_delay }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% else %}
+    No late journeys
+{% endif %}
+<h1>Upload your journey history</h1>
+<form method=post enctype=multipart/form-data>
+    <input type=file name=file>
+    <input type=submit value=Analyze>
+</form> 
+{% endblock %}
