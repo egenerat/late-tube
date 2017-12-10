@@ -1,4 +1,4 @@
-from main import calculate_duration, parse_date
+from utils import parse_date
 import datetime
 
 import unittest
