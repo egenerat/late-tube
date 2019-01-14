@@ -50,7 +50,11 @@ def is_delayed_journey(station_a, station_b, duration_dt):
 def is_tube_journey(str_journey):
     BUS_STRING_PATTERN = "Bus journey, route "
     REFUND_PATTERN = "Oyster helpline refund"
-    return not (str_journey.startswith(BUS_STRING_PATTERN) or str_journey.startswith(REFUND_PATTERN))
+    SEASON_TICKET_BOUGHT_PATTERN = "Season ticket bought, "
+    TOP_UP_PATTERN = "Topped up, "
+    EXIT_SAME_STATION = "Entered and exited "
+    return not str_journey.startswith((BUS_STRING_PATTERN, REFUND_PATTERN, SEASON_TICKET_BOUGHT_PATTERN, TOP_UP_PATTERN,
+                                       EXIT_SAME_STATION))
 
 
 def extract_departure_arrival(journey_str):
@@ -58,29 +62,34 @@ def extract_departure_arrival(journey_str):
     departure_station, arrival_station = journey_str.split(JOURNEY_SEPARATOR)
     return departure_station, arrival_station
 
+
 def parse_csv(filename):
     with open(filename) as csvfile:
         next(csvfile)
         csvfile
         reader = csv.DictReader(csvfile)
         for row in reader:
+            # print(row)
             if is_tube_journey(row[KEY_JOURNEY]):
-                start_date = row[KEY_DATE]
-                start_dt = parse_date(start_date, row[KEY_START_TIME])
-                end_dt = parse_date(start_date, row[KEY_END_TIME])
-                if end_dt < start_dt:
-                    # case arrival on the next day
-                    print("TODO handle the case")
-                duration = end_dt - start_dt
-                delayed_journeys += 1
+                end_time_str = row[KEY_END_TIME]
                 departure_station, arrival_station = extract_departure_arrival(row[KEY_JOURNEY])
-                # print(row)
-                if is_delayed_journey(departure_station, arrival_station, duration):
-                    # print("Delayed!")
-                    pass
+                if end_time_str and arrival_station != ' [No touch-out]':
+                    start_date = row[KEY_DATE]
+                    start_dt = parse_date(start_date, row[KEY_START_TIME])
+                    end_dt = parse_date(start_date, end_time_str)
+                    if end_dt < start_dt:
+                        # case arrival on the next day
+                        print("TODO handle the case")
+                    duration = end_dt - start_dt
+
+                    if is_delayed_journey(departure_station, arrival_station, duration):
+                        # print("Delayed!")
+                        pass
+                    else:
+                        # print("OK")
+                        pass
                 else:
-                    # print("OK")
-                    pass
+                    print("New case to be handled for the journey\n{}\n\n".format(row))
             
 
 if __name__ == '__main__':
